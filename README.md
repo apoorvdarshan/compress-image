@@ -34,7 +34,7 @@ A powerful, free online image compressor that reduces file sizes by up to 90% wh
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/yourusername/image-compressor.git
+git clone https://github.com/apoorvdarshan/image-compressor.git
 cd image-compressor
 ```
 
