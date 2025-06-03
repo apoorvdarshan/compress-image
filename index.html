@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Free online image compressor - Reduce image file size without losing quality"
+    />
+    <title>ImageCompress Pro - Free Online Image Compressor</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <nav class="navbar">
+        <div class="nav-container">
+          <div class="logo">
+            <i class="fas fa-compress-alt"></i>
+            <h1>ImageCompress Pro</h1>
+          </div>
+          <div class="nav-menu">
+            <a href="#home" class="nav-link">Home</a>
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#about" class="nav-link">About</a>
+          </div>
+          <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section id="home" class="hero-section">
+        <div class="container">
+          <div class="hero-content">
+            <h2 class="hero-title">Compress Images Without Losing Quality</h2>
+            <p class="hero-subtitle">
+              Reduce your image file sizes by up to 90% while maintaining
+              excellent quality. Fast, secure, and completely free.
+            </p>
+
+            <div class="upload-section">
+              <div class="upload-area" id="uploadArea">
+                <div class="upload-content">
+                  <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                  <h3>Drop your images here</h3>
+                  <p>or <span class="upload-link">browse files</span></p>
+                  <input
+                    type="file"
+                    id="fileInput"
+                    multiple
+                    accept="image/*"
+                    hidden
+                  />
+                </div>
+              </div>
+
+              <!-- Selected Images Preview -->
+              <div
+                class="selected-images"
+                id="selectedImages"
+                style="display: none"
+              >
+                <h4>Selected Images</h4>
+                <div class="image-preview-grid" id="imagePreviewGrid">
+                  <!-- Selected image previews will be populated here -->
+                </div>
+              </div>
+
+              <div class="compression-settings">
+                <div class="compression-method">
+                  <h4>Compression Method:</h4>
+                  <div class="method-options">
+                    <label class="method-option">
+                      <input
+                        type="radio"
+                        name="compressionMethod"
+                        value="quality"
+                        checked
+                      />
+                      <span class="method-label">Quality-based</span>
+                    </label>
+                    <label class="method-option">
+                      <input
+                        type="radio"
+                        name="compressionMethod"
+                        value="size"
+                      />
+                      <span class="method-label">Size-based</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="setting-group" id="qualityGroup">
+                  <label for="quality">Quality:</label>
+                  <div class="quality-slider">
+                    <input
+                      type="range"
+                      id="quality"
+                      min="10"
+                      max="100"
+                      value="80"
+                    />
+                    <span id="qualityValue">80%</span>
+                  </div>
+                  <small class="setting-help"
+                    >Higher quality = larger file size</small
+                  >
+                </div>
+
+                <div class="setting-group" id="sizeGroup" style="display: none">
+                  <label for="maxFileSize">Target File Size (KB):</label>
+                  <div class="file-size-input">
+                    <input
+                      type="number"
+                      id="maxFileSize"
+                      min="1"
+                      max="10000"
+                      placeholder="Enter size"
+                      step="1"
+                    />
+                    <span class="input-suffix">KB</span>
+                  </div>
+                  <small class="setting-help"
+                    >Images will be compressed to not exceed this size</small
+                  >
+                </div>
+
+                <div class="setting-group">
+                  <label for="format">Output Format:</label>
+                  <select id="format">
+                    <option value="original">Keep Original</option>
+                    <option value="jpeg">JPEG</option>
+                    <option value="png">PNG</option>
+                    <option value="webp">WebP</option>
+                  </select>
+                </div>
+              </div>
+
+              <button id="compressBtn" class="compress-btn" disabled>
+                <i class="fas fa-compress"></i>
+                Compress Images
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="results-section"
+        id="resultsSection"
+        style="display: none"
+      >
+        <div class="container">
+          <h3>Compression Results</h3>
+          <div class="results-grid" id="resultsGrid">
+            <!-- Results will be populated here -->
+          </div>
+          <div class="download-actions">
+            <button id="downloadAllBtn" class="download-all-btn">
+              <i class="fas fa-download"></i>
+              Download All
+            </button>
+            <button id="downloadZipBtn" class="download-zip-btn">
+              <i class="fas fa-file-archive"></i>
+              Download as ZIP
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="features-section">
+        <div class="container">
+          <h2>Why Choose ImageCompress Pro?</h2>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <h3>100% Secure</h3>
+              <p>
+                Your images are processed locally in your browser. We never
+                store or transmit your files.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-lightning-bolt"></i>
+              </div>
+              <h3>Lightning Fast</h3>
+              <p>
+                Advanced compression algorithms ensure quick processing without
+                compromising quality.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <h3>Mobile Friendly</h3>
+              <p>
+                Fully responsive design that works perfectly on all devices and
+                screen sizes.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-images"></i>
+              </div>
+              <h3>Multiple Formats</h3>
+              <p>
+                Support for JPEG, PNG, WebP and other popular image formats with
+                batch processing.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="about-section">
+        <div class="container">
+          <div class="about-content">
+            <h2>About ImageCompress Pro</h2>
+            <p>
+              Our mission is to provide the best image compression tool that's
+              fast, secure, and easy to use. Whether you're a web developer
+              optimizing images for websites, a photographer managing large
+              files, or someone who just wants to save storage space, we've got
+              you covered.
+            </p>
+
+            <div class="stats">
+              <div class="stat">
+                <h3>1M+</h3>
+                <p>Images Compressed</p>
+              </div>
+              <div class="stat">
+                <h3>85%</h3>
+                <p>Average Size Reduction</p>
+              </div>
+              <div class="stat">
+                <h3>100%</h3>
+                <p>Free to Use</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <div class="logo">
+              <i class="fas fa-compress-alt"></i>
+              <span>ImageCompress Pro</span>
+            </div>
+            <p>The best free online image compressor for all your needs.</p>
+          </div>
+
+          <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="#home">Home</a></li>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#about">About</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h4>Support</h4>
+            <ul>
+              <li><a href="#">FAQ</a></li>
+              <li><a href="#">Contact Us</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>&copy; 2024 ImageCompress Pro. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Progress Modal -->
+    <div id="progressModal" class="modal">
+      <div class="modal-content">
+        <h3>Compressing Images...</h3>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span id="progressText">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
