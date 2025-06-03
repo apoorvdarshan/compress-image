@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ImageCompress Pro 🖼️
 
 A powerful, free online image compressor that reduces file sizes by up to 90% while maintaining excellent quality. Built with vanilla JavaScript for fast, secure, client-side compression.
@@ -184,3 +185,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Made with ❤️ for the web community. Compress smart, save space! 🚀
+=======
+# image-compressor
+Effortlessly compress JPG, PNG, and WebP images with high quality using this simple, fast, and web-ready image compression tool.
+>>>>>>> e36598ff699a7b2b4fdcbcc62592e3f173bcbfbd
