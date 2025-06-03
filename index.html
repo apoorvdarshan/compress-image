@@ -30,6 +30,16 @@
             <a href="#home" class="nav-link">Home</a>
             <a href="#features" class="nav-link">Features</a>
             <a href="#about" class="nav-link">About</a>
+            <div class="auth-buttons">
+              <button id="loginBtn" class="auth-btn login-btn">Login</button>
+              <button id="signupBtn" class="auth-btn signup-btn">
+                Sign Up
+              </button>
+              <div id="userProfile" class="user-profile" style="display: none">
+                <span id="userName" class="user-name"></span>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+              </div>
+            </div>
           </div>
           <div class="hamburger">
             <span class="bar"></span>
@@ -308,6 +318,101 @@
           </div>
           <span id="progressText">0%</span>
         </div>
+      </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal auth-modal">
+      <div class="modal-content auth-modal-content">
+        <div class="modal-header">
+          <h3>Welcome Back!</h3>
+          <button class="close-btn" id="closeLoginModal">&times;</button>
+        </div>
+        <form id="loginForm" class="auth-form">
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input
+              type="email"
+              id="loginEmail"
+              name="email"
+              required
+              placeholder="Enter your email"
+            />
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              name="password"
+              required
+              placeholder="Enter your password"
+            />
+          </div>
+          <button type="submit" class="auth-submit-btn">Login</button>
+        </form>
+        <p class="auth-switch">
+          Don't have an account?
+          <a href="#" id="switchToSignup">Sign up here</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal auth-modal">
+      <div class="modal-content auth-modal-content">
+        <div class="modal-header">
+          <h3>Create Account</h3>
+          <button class="close-btn" id="closeSignupModal">&times;</button>
+        </div>
+        <form id="signupForm" class="auth-form">
+          <div class="form-group">
+            <label for="signupName">Full Name</label>
+            <input
+              type="text"
+              id="signupName"
+              name="name"
+              required
+              placeholder="Enter your full name"
+            />
+          </div>
+          <div class="form-group">
+            <label for="signupEmail">Email</label>
+            <input
+              type="email"
+              id="signupEmail"
+              name="email"
+              required
+              placeholder="Enter your email"
+            />
+          </div>
+          <div class="form-group">
+            <label for="signupPassword">Password</label>
+            <input
+              type="password"
+              id="signupPassword"
+              name="password"
+              required
+              placeholder="Create a password"
+              minlength="6"
+            />
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              placeholder="Confirm your password"
+            />
+          </div>
+          <button type="submit" class="auth-submit-btn">Create Account</button>
+        </form>
+        <p class="auth-switch">
+          Already have an account?
+          <a href="#" id="switchToLogin">Login here</a>
+        </p>
       </div>
     </div>
 

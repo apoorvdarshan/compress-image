@@ -15,6 +15,7 @@ class ImageCompressor {
     this.initializeElements();
     this.attachEventListeners();
     this.initializeNavigation();
+    this.initializeAuth();
   }
 
   initializeElements() {
@@ -48,6 +49,21 @@ class ImageCompressor {
     // Navigation elements
     this.hamburger = document.querySelector(".hamburger");
     this.navMenu = document.querySelector(".nav-menu");
+
+    // Authentication elements
+    this.loginBtn = document.getElementById("loginBtn");
+    this.signupBtn = document.getElementById("signupBtn");
+    this.logoutBtn = document.getElementById("logoutBtn");
+    this.loginModal = document.getElementById("loginModal");
+    this.signupModal = document.getElementById("signupModal");
+    this.closeLoginModal = document.getElementById("closeLoginModal");
+    this.closeSignupModal = document.getElementById("closeSignupModal");
+    this.loginForm = document.getElementById("loginForm");
+    this.signupForm = document.getElementById("signupForm");
+    this.switchToSignup = document.getElementById("switchToSignup");
+    this.switchToLogin = document.getElementById("switchToLogin");
+    this.userProfile = document.getElementById("userProfile");
+    this.userName = document.getElementById("userName");
   }
 
   attachEventListeners() {
@@ -1416,6 +1432,240 @@ class ImageCompressor {
   changeFileExtension(filename, newExtension) {
     const name = filename.substring(0, filename.lastIndexOf("."));
     return `${name}.${newExtension}`;
+  }
+
+  // Authentication System
+  initializeAuth() {
+    // Check if user is already logged in
+    this.checkAuthState();
+
+    // Event listeners for authentication
+    this.loginBtn.addEventListener("click", () => this.showLoginModal());
+    this.signupBtn.addEventListener("click", () => this.showSignupModal());
+    this.logoutBtn.addEventListener("click", () => this.logout());
+
+    // Modal close buttons
+    this.closeLoginModal.addEventListener("click", () => this.hideLoginModal());
+    this.closeSignupModal.addEventListener("click", () =>
+      this.hideSignupModal()
+    );
+
+    // Switch between login and signup
+    this.switchToSignup.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.hideLoginModal();
+      this.showSignupModal();
+    });
+
+    this.switchToLogin.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.hideSignupModal();
+      this.showLoginModal();
+    });
+
+    // Form submissions
+    this.loginForm.addEventListener("submit", (e) => this.handleLogin(e));
+    this.signupForm.addEventListener("submit", (e) => this.handleSignup(e));
+
+    // Close modals when clicking outside
+    this.loginModal.addEventListener("click", (e) => {
+      if (e.target === this.loginModal) this.hideLoginModal();
+    });
+
+    this.signupModal.addEventListener("click", (e) => {
+      if (e.target === this.signupModal) this.hideSignupModal();
+    });
+  }
+
+  checkAuthState() {
+    const user = this.getCurrentUser();
+    if (user) {
+      this.showUserProfile(user);
+    } else {
+      this.showAuthButtons();
+    }
+  }
+
+  getCurrentUser() {
+    const userStr = localStorage.getItem("imageCompressorUser");
+    return userStr ? JSON.parse(userStr) : null;
+  }
+
+  showLoginModal() {
+    this.loginModal.style.display = "block";
+    document.body.style.overflow = "hidden";
+    // Clear form
+    this.loginForm.reset();
+  }
+
+  hideLoginModal() {
+    this.loginModal.style.display = "none";
+    document.body.style.overflow = "auto";
+  }
+
+  showSignupModal() {
+    this.signupModal.style.display = "block";
+    document.body.style.overflow = "hidden";
+    // Clear form
+    this.signupForm.reset();
+  }
+
+  hideSignupModal() {
+    this.signupModal.style.display = "none";
+    document.body.style.overflow = "auto";
+  }
+
+  async handleLogin(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this.loginForm);
+    const email = formData.get("email");
+    const password = formData.get("password");
+
+    try {
+      const success = this.authenticateUser(email, password);
+
+      if (success) {
+        const user = this.getStoredUser(email);
+        this.setCurrentUser(user);
+        this.showUserProfile(user);
+        this.hideLoginModal();
+        this.showNotification("Successfully logged in!", "success");
+      } else {
+        this.showNotification("Invalid email or password!", "error");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      this.showNotification("Login failed. Please try again.", "error");
+    }
+  }
+
+  async handleSignup(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this.signupForm);
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const confirmPassword = formData.get("confirmPassword");
+
+    // Validation
+    if (password !== confirmPassword) {
+      this.showNotification("Passwords do not match!", "error");
+      return;
+    }
+
+    if (password.length < 6) {
+      this.showNotification("Password must be at least 6 characters!", "error");
+      return;
+    }
+
+    // Check if user already exists
+    if (this.userExists(email)) {
+      this.showNotification(
+        "An account with this email already exists!",
+        "error"
+      );
+      return;
+    }
+
+    try {
+      const user = {
+        id: Date.now().toString(),
+        name: name,
+        email: email,
+        password: this.hashPassword(password), // Simple hash for demo
+        createdAt: new Date().toISOString(),
+      };
+
+      this.storeUser(user);
+      this.setCurrentUser(user);
+      this.showUserProfile(user);
+      this.hideSignupModal();
+      this.showNotification(
+        `Welcome ${name}! Account created successfully!`,
+        "success"
+      );
+    } catch (error) {
+      console.error("Signup error:", error);
+      this.showNotification(
+        "Failed to create account. Please try again.",
+        "error"
+      );
+    }
+  }
+
+  authenticateUser(email, password) {
+    const users = this.getStoredUsers();
+    const user = users.find((u) => u.email === email);
+
+    if (user && user.password === this.hashPassword(password)) {
+      return true;
+    }
+    return false;
+  }
+
+  userExists(email) {
+    const users = this.getStoredUsers();
+    return users.some((u) => u.email === email);
+  }
+
+  getStoredUser(email) {
+    const users = this.getStoredUsers();
+    return users.find((u) => u.email === email);
+  }
+
+  getStoredUsers() {
+    const usersStr = localStorage.getItem("imageCompressorUsers");
+    return usersStr ? JSON.parse(usersStr) : [];
+  }
+
+  storeUser(user) {
+    const users = this.getStoredUsers();
+    users.push(user);
+    localStorage.setItem("imageCompressorUsers", JSON.stringify(users));
+  }
+
+  setCurrentUser(user) {
+    // Don't store password in current user session
+    const userSession = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      createdAt: user.createdAt,
+    };
+    localStorage.setItem("imageCompressorUser", JSON.stringify(userSession));
+  }
+
+  // Simple hash function for demo purposes
+  // In production, use proper password hashing like bcrypt
+  hashPassword(password) {
+    let hash = 0;
+    for (let i = 0; i < password.length; i++) {
+      const char = password.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString();
+  }
+
+  showUserProfile(user) {
+    this.userName.textContent = user.name;
+    this.userProfile.style.display = "flex";
+    this.loginBtn.style.display = "none";
+    this.signupBtn.style.display = "none";
+  }
+
+  showAuthButtons() {
+    this.userProfile.style.display = "none";
+    this.loginBtn.style.display = "block";
+    this.signupBtn.style.display = "block";
+  }
+
+  logout() {
+    localStorage.removeItem("imageCompressorUser");
+    this.showAuthButtons();
+    this.showNotification("Successfully logged out!", "success");
   }
 
   // Reset functionality
