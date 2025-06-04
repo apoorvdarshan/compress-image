@@ -15,6 +15,7 @@ class ImageCompressor {
     this.initializeElements();
     this.attachEventListeners();
     this.initializeNavigation();
+    this.initializeDemoSlider();
   }
 
   initializeElements() {
@@ -107,23 +108,85 @@ class ImageCompressor {
     this.hamburger.addEventListener("click", () => {
       this.hamburger.classList.toggle("active");
       this.navMenu.classList.toggle("active");
+
+      // Prevent body scroll when menu is open
+      if (this.navMenu.classList.contains("active")) {
+        document.body.classList.add("menu-open");
+      } else {
+        document.body.classList.remove("menu-open");
+      }
     });
 
     // Smooth scrolling for navigation links
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       anchor.addEventListener("click", (e) => {
         e.preventDefault();
-        const target = document.querySelector(anchor.getAttribute("href"));
+        const targetId = anchor.getAttribute("href");
+        const target = document.querySelector(targetId);
+
         if (target) {
           target.scrollIntoView({
             behavior: "smooth",
             block: "start",
           });
+
           // Close mobile menu if open
           this.navMenu.classList.remove("active");
           this.hamburger.classList.remove("active");
+          document.body.classList.remove("menu-open");
         }
       });
+    });
+
+    // Additional specific handling for mobile nav-menu links
+    const mobileNavLinks = this.navMenu.querySelectorAll(".nav-link");
+    mobileNavLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const targetId = link.getAttribute("href");
+        const target = document.querySelector(targetId);
+
+        console.log("Mobile nav link clicked:", targetId, target);
+
+        if (target) {
+          // Close mobile menu first
+          this.navMenu.classList.remove("active");
+          this.hamburger.classList.remove("active");
+          document.body.classList.remove("menu-open");
+
+          // Then scroll to target
+          setTimeout(() => {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }, 100);
+        }
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        this.navMenu.classList.contains("active") &&
+        !this.navMenu.contains(e.target) &&
+        !this.hamburger.contains(e.target)
+      ) {
+        this.navMenu.classList.remove("active");
+        this.hamburger.classList.remove("active");
+        document.body.classList.remove("menu-open");
+      }
+    });
+
+    // Close menu on window resize
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 768) {
+        this.navMenu.classList.remove("active");
+        this.hamburger.classList.remove("active");
+        document.body.classList.remove("menu-open");
+      }
     });
   }
 
@@ -160,15 +223,43 @@ class ImageCompressor {
       return;
     }
 
-    this.selectedFiles = validFiles;
+    // Filter out duplicates based on file name and size
+    const newFiles = validFiles.filter((newFile) => {
+      return !this.selectedFiles.some(
+        (existingFile) =>
+          existingFile.name === newFile.name &&
+          existingFile.size === newFile.size
+      );
+    });
+
+    if (newFiles.length === 0) {
+      this.showNotification(
+        "All selected files are already in the list!",
+        "warning"
+      );
+      return;
+    }
+
+    // Add new files to existing selection instead of replacing
+    this.selectedFiles = [...this.selectedFiles, ...newFiles];
     this.updateUploadArea();
     this.generateImagePreviews();
     this.compressBtn.disabled = false;
 
-    this.showNotification(
-      `${validFiles.length} file(s) selected successfully!`,
-      "success"
-    );
+    const totalFiles = this.selectedFiles.length;
+    const addedFiles = newFiles.length;
+
+    if (addedFiles === 1) {
+      this.showNotification(
+        `${addedFiles} new file added! Total: ${totalFiles} file(s)`,
+        "success"
+      );
+    } else {
+      this.showNotification(
+        `${addedFiles} new files added! Total: ${totalFiles} file(s)`,
+        "success"
+      );
+    }
   }
 
   validateFile(file) {
@@ -194,7 +285,7 @@ class ImageCompressor {
     uploadContent.innerHTML = `
             <i class="fas fa-check-circle upload-icon" style="color: #10b981;"></i>
             <h3>${this.selectedFiles.length} file(s) selected</h3>
-            <p>Click to select different files or drag new ones here</p>
+            <p>Click to add more images or drag new ones here</p>
         `;
   }
 
@@ -1474,6 +1565,148 @@ class ImageCompressor {
     // Clear file input
     this.fileInput.value = "";
   }
+
+  initializeDemoSlider() {
+    const demoSliderHandle = document.querySelector(".demo-slider-handle");
+    const demoCompressed = document.querySelector(".demo-compressed");
+    const demoImageComparison = document.querySelector(
+      ".demo-image-comparison"
+    );
+
+    if (!demoSliderHandle || !demoCompressed || !demoImageComparison) {
+      return; // Elements not found, exit gracefully
+    }
+
+    let isDragging = false;
+
+    // Mouse events
+    demoSliderHandle.addEventListener("mousedown", startDrag);
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("mouseup", stopDrag);
+
+    // Touch events
+    demoSliderHandle.addEventListener("touchstart", startDrag);
+    document.addEventListener("touchmove", drag);
+    document.addEventListener("touchend", stopDrag);
+
+    function startDrag(e) {
+      e.preventDefault();
+      isDragging = true;
+      demoSliderHandle.style.transition = "none";
+      demoCompressed.style.transition = "none";
+    }
+
+    function drag(e) {
+      if (!isDragging) return;
+
+      e.preventDefault();
+
+      const rect = demoImageComparison.getBoundingClientRect();
+      const x =
+        (e.type.includes("touch") ? e.touches[0].clientX : e.clientX) -
+        rect.left;
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+      updateSliderPosition(percentage);
+    }
+
+    function stopDrag() {
+      if (!isDragging) return;
+
+      isDragging = false;
+      demoSliderHandle.style.transition = "";
+      demoCompressed.style.transition = "";
+    }
+
+    function updateSliderPosition(percentage) {
+      demoSliderHandle.style.left = `${percentage}%`;
+      demoCompressed.style.clipPath = `inset(0 0 0 ${percentage}%)`;
+    }
+
+    // Auto-play animation on scroll into view
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              // Animate from 50% to 20% to 80% and back to 50%
+              animateSlider(50, 20, 1000);
+              setTimeout(() => {
+                animateSlider(20, 80, 1500);
+                setTimeout(() => {
+                  animateSlider(80, 50, 1000);
+                }, 1600);
+              }, 1100);
+            }, 500);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(demoImageComparison);
+
+    function animateSlider(from, to, duration) {
+      const startTime = Date.now();
+
+      function animate() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeInOut =
+          progress < 0.5
+            ? 2 * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+        const currentPercentage = from + (to - from) * easeInOut;
+        updateSliderPosition(currentPercentage);
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // Create compressed version of the demo image
+    setTimeout(() => {
+      this.createDemoCompressedImage();
+    }, 100);
+  }
+
+  async createDemoCompressedImage() {
+    const demoCompressed = document.querySelector(".demo-compressed");
+    const demoOriginal = document.querySelector(".demo-original");
+
+    if (!demoCompressed || !demoOriginal) return;
+
+    try {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0);
+
+        // Create compressed version with lower quality
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.3);
+        demoCompressed.src = compressedDataUrl;
+      };
+
+      img.src = demoOriginal.src;
+    } catch (error) {
+      console.log("Demo image compression simulation failed:", error);
+      // Fallback: use same image with different filter
+      demoCompressed.style.filter = "contrast(1.1) saturate(0.9)";
+    }
+  }
 }
 
 // Performance monitoring
@@ -1536,6 +1769,168 @@ class LazyLoader {
   }
 }
 
+// FAQ Functionality
+function initializeFAQ() {
+  const faqItems = document.querySelectorAll(".faq-item");
+
+  faqItems.forEach((item) => {
+    const question = item.querySelector(".faq-question");
+
+    question.addEventListener("click", () => {
+      // Close other open FAQ items
+      faqItems.forEach((otherItem) => {
+        if (otherItem !== item && otherItem.classList.contains("active")) {
+          otherItem.classList.remove("active");
+        }
+      });
+
+      // Toggle current item
+      item.classList.toggle("active");
+    });
+  });
+}
+
+// Testimonial Videos Functionality
+function initializeTestimonialVideos() {
+  const testimonialVideoContainers =
+    document.querySelectorAll(".testimonial-video");
+
+  testimonialVideoContainers.forEach((container) => {
+    const video = container.querySelector("video");
+    const playOverlay = container.querySelector(".video-play-overlay");
+    const playButton = container.querySelector(".play-button");
+    const playIcon = playButton.querySelector("i");
+
+    if (!video || !playOverlay || !playButton) return;
+
+    // Set initial state
+    video.muted = true; // Start muted
+    video.controls = false; // Remove default controls
+    container.classList.remove("playing");
+
+    // Handle container click to play/pause
+    container.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleVideo();
+    });
+
+    // Handle play button click specifically
+    playButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleVideo();
+    });
+
+    function toggleVideo() {
+      if (video.paused) {
+        playVideo();
+      } else {
+        pauseVideo();
+      }
+    }
+
+    function playVideo() {
+      // Unmute and play with sound when user clicks
+      video.muted = false;
+      video
+        .play()
+        .then(() => {
+          container.classList.add("playing");
+          playIcon.className = "fas fa-pause";
+          playButton.classList.add("pause");
+
+          // Pause all other videos
+          pauseOtherVideos(container);
+        })
+        .catch((error) => {
+          console.warn("Video play failed:", error);
+          // Fallback: try with muted if unmuted fails
+          video.muted = true;
+          video
+            .play()
+            .then(() => {
+              container.classList.add("playing");
+              playIcon.className = "fas fa-pause";
+              playButton.classList.add("pause");
+              pauseOtherVideos(container);
+            })
+            .catch((fallbackError) => {
+              console.error(
+                "Video play failed even when muted:",
+                fallbackError
+              );
+            });
+        });
+    }
+
+    function pauseVideo() {
+      video.pause();
+      container.classList.remove("playing");
+      playIcon.className = "fas fa-play";
+      playButton.classList.remove("pause");
+    }
+
+    // Handle video events
+    video.addEventListener("play", () => {
+      container.classList.add("playing");
+      playIcon.className = "fas fa-pause";
+      playButton.classList.add("pause");
+    });
+
+    video.addEventListener("pause", () => {
+      container.classList.remove("playing");
+      playIcon.className = "fas fa-play";
+      playButton.classList.remove("pause");
+    });
+
+    video.addEventListener("ended", () => {
+      container.classList.remove("playing");
+      playIcon.className = "fas fa-play";
+      playButton.classList.remove("pause");
+      video.muted = true; // Reset to muted state
+    });
+
+    // Handle video loading errors
+    video.addEventListener("error", (e) => {
+      console.warn("Video failed to load:", video.src);
+      // Show fallback content
+      playOverlay.innerHTML = `
+        <div class="play-button error">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+      `;
+      playOverlay.style.background = "rgba(255, 0, 0, 0.1)";
+    });
+
+    // Handle loading state
+    video.addEventListener("loadstart", () => {
+      playButton.style.opacity = "0.7";
+    });
+
+    video.addEventListener("loadeddata", () => {
+      playButton.style.opacity = "1";
+    });
+  });
+
+  // Function to pause all other videos when one starts playing
+  function pauseOtherVideos(currentContainer) {
+    const allContainers = document.querySelectorAll(".testimonial-video");
+    allContainers.forEach((container) => {
+      if (container !== currentContainer) {
+        const video = container.querySelector("video");
+        const playIcon = container.querySelector(".play-button i");
+        const playButton = container.querySelector(".play-button");
+
+        if (video && !video.paused) {
+          video.pause();
+          container.classList.remove("playing");
+          if (playIcon) playIcon.className = "fas fa-play";
+          if (playButton) playButton.classList.remove("pause");
+        }
+      }
+    });
+  }
+}
+
 // Initialize the application
 let imageCompressor;
 let performanceMonitor;
@@ -1546,6 +1941,9 @@ document.addEventListener("DOMContentLoaded", () => {
   imageCompressor = new ImageCompressor();
   performanceMonitor = new PerformanceMonitor();
   lazyLoader = new LazyLoader();
+
+  // Initialize FAQ functionality
+  initializeFAQ();
 
   // Add some helpful global functions
   window.imageCompressor = imageCompressor;
@@ -1572,6 +1970,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Analytics-like tracking (privacy-friendly)
   console.log("ImageCompress Pro initialized successfully");
+
+  // Initialize testimonial videos
+  initializeTestimonialVideos();
 });
 
 // Handle page visibility changes
